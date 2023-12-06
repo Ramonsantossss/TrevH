@@ -1,32 +1,34 @@
-const express = require("express");
+// Seu arquivo principal do servidor (ex: server.js)
+
+const express = require('express');
 const app = express();
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
+const httpServer = require('http').createServer(app);
+const { Server } = require('socket.io');
+const cors = require('cors');
 
 app.use(cors());
 
-const server = http.createServer(app);
-
-const io = new Server(server, {
+const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
+    origin: 'https://interface.trevodev.repl.co', // Substitua pelo endereço do seu aplicativo React
+    methods: ['GET', 'POST'],
   },
 });
 
-io.on("connection", (socket) => {
+io.on('connection', (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
-  socket.on("join_room", (data) => {
+  socket.on('join_room', (data) => {
     socket.join(data);
   });
 
-  socket.on("send_message", (data) => {
-    socket.to(data.room).emit("receive_message", data);
+  socket.on('send_message', (data) => {
+    io.to(data.room).emit('receive_message', data);
   });
 });
 
-server.listen(3001, () => {
-  console.log("SERVER IS RUNNING");
+const PORT = process.env.PORT || 3001;
+
+httpServer.listen(PORT, () => {
+  console.log(`Servidor Socket.IO rodando na porta ${PORT}`);
 });

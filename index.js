@@ -1,45 +1,32 @@
-// seu-arquivo-principal.js
-
-const http = require('http');
-const express = require('express');
-const { Server } = require('socket.io');
-
+const express = require("express");
 const app = express();
+const http = require("http");
+const { Server } = require("socket.io");
+const cors = require("cors");
+
+app.use(cors());
+
 const server = http.createServer(app);
-const io = new Server(server);
 
-app.get('/', (req, res) => {
-  res.json({ status: "Online" });
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
 });
 
-io.on('connection', (socket) => {
-  console.log('Usuário conectado!', socket.id);
+io.on("connection", (socket) => {
+  console.log(`User Connected: ${socket.id}`);
 
-  socket.on('disconnect', () => {
-    console.log('Usuário desconectado!', socket.id);
+  socket.on("join_room", (data) => {
+    socket.join(data);
   });
 
-  socket.on('set_username', (username) => {
-    socket.data.username = username;
-    console.log(`Nome de usuário definido para ${username}`);
-  });
-
-  socket.on('message', (text) => {
-    console.log(`Mensagem recebida: "${text}" de ${socket.id}`);
-
-    const author = socket.data.username || 'Anônimo';
-
-    // Emitir a mensagem para todos os sockets conectados, incluindo o emissor
-    io.emit('receive_message', {
-      text,
-      authorId: socket.id,
-      author,
-    });
+  socket.on("send_message", (data) => {
+    socket.to(data.room).emit("receive_message", data);
   });
 });
 
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log(`Servidor Socket.IO rodando na porta ${PORT}`);
+server.listen(3001, () => {
+  console.log("SERVER IS RUNNING");
 });

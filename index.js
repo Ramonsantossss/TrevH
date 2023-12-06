@@ -1,4 +1,4 @@
-// Seu arquivo principal do servidor (ex: server.js)
+
 
 const express = require('express');
 const app = express();
@@ -20,9 +20,17 @@ io.on('connection', (socket) => {
 
   socket.on('join_room', (data) => {
     socket.join(data);
+
+    // Emitir a lista completa de mensagens ao entrar na sala
+    io.to(data).emit('all_messages', socket.messages || []);
   });
 
   socket.on('send_message', (data) => {
+    // Atualizar a lista de mensagens do socket
+    socket.messages = socket.messages || [];
+    socket.messages.push(data);
+
+    // Emitir a mensagem para a sala
     io.to(data.room).emit('receive_message', data);
   });
 });

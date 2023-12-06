@@ -1,4 +1,5 @@
 
+// Seu arquivo principal do servidor (ex: server.js)
 
 const express = require('express');
 const app = express();
@@ -28,10 +29,18 @@ io.on('connection', (socket) => {
   socket.on('send_message', (data) => {
     // Atualizar a lista de mensagens do socket
     socket.messages = socket.messages || [];
-    socket.messages.push(data);
+    
+    // Verificar se a mensagem já existe na lista antes de adicioná-la
+    const isDuplicate = socket.messages.some(
+      (msg) => msg.text === data.text && msg.author === data.author
+    );
 
-    // Emitir a mensagem para a sala
-    io.to(data.room).emit('receive_message', data);
+    if (!isDuplicate) {
+      socket.messages.push(data);
+
+      // Emitir a mensagem para a sala
+      io.to(data.room).emit('receive_message', data);
+    }
   });
 });
 
@@ -40,3 +49,5 @@ const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`Servidor Socket.IO rodando na porta ${PORT}`);
 });
+
+

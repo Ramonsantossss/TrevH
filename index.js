@@ -11,22 +11,27 @@ app.use(cors());
 
 const io = new Server(httpServer, {
   cors: {
-    origin: 'https://interface.trevodev.repl.co', // Substitua pelo endereço do seu aplicativo React
+    origin: ['https://interface.trevodev.repl.co', 'http://localhost:8080', 'http://outro-exemplo.com'],
     methods: ['GET', 'POST'],
   },
 });
 
+
 io.on('connection', (socket) => {
-  console.log(`User Connected: ${socket.id}`);
-
-  socket.on('join_room', (data) => {
+socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+ // console.log(`User Connected: ${socket.id}`);
+  //console.log(socket)
+   socket.on('join_room', (data) => {
     socket.join(data);
-
+    console.log(data)
     // Emitir a lista completa de mensagens ao entrar na sala
     io.to(data).emit('all_messages', socket.messages || []);
   });
 
   socket.on('send_message', (data) => {
+  console.log(data)
     // Atualizar a lista de mensagens do socket
     socket.messages = socket.messages || [];
     
@@ -43,6 +48,14 @@ io.on('connection', (socket) => {
     }
   });
 });
+app.get('/', (req, res) => {
+ io.on('connection', (socket) => {
+  socket.on('send_message', (data) => {
+    res.json(data)
+  });
+ });
+});
+
 
 const PORT = process.env.PORT || 3001;
 

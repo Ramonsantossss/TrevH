@@ -25,18 +25,15 @@ io.on('connection', (socket) => {
   });
 
   socket.on('message', (text) => {
-    // Usar socket.emit para enviar a mensagem apenas para o socket que a enviou
-    socket.emit('receive_message', {
-      text,
-      authorId: socket.id,
-      author: socket.data.username || 'Anônimo',
-    });
+    console.log('Mensagem recebida:', text);
 
-    // Usar io.emit para enviar a mensagem para todos os outros sockets conectados
-    socket.broadcast.emit('receive_message', {
+    const author = socket.data.username || 'Anônimo';
+
+    // Emitir a mensagem para todos os sockets conectados, incluindo o emissor
+    io.emit('receive_message', {
       text,
       authorId: socket.id,
-      author: socket.data.username || 'Anônimo',
+      author,
     });
   });
 });

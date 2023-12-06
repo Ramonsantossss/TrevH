@@ -25,7 +25,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('message', (text) => {
-    console.log('Mensagem recebida:', text);
+    console.log(`Mensagem recebida: "${text}" de ${socket.id}`);
 
     const author = socket.data.username || 'Anônimo';
 
